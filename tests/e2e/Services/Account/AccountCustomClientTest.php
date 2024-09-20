@@ -1339,6 +1339,7 @@ class AccountCustomClientTest extends Scope
         return [];
     }
 
+    // A test case that verifies when a user is blocked, a new user can still logged in successfully.
     public function testNewUserIsNotBlocked(): array
     {
         $email = uniqid() . 'user@localhost.test';
@@ -1348,6 +1349,8 @@ class AccountCustomClientTest extends Scope
         /**
          * Test for SUCCESS
          */
+
+         // The response is checked to ensure that the user creation was successful (status code 201)
         $response = $this->client->call(Client::METHOD_POST, '/account', array_merge([
             'origin' => 'http://localhost',
             'content-type' => 'application/json',
@@ -1363,6 +1366,8 @@ class AccountCustomClientTest extends Scope
 
         $this->assertEquals(201, $response['headers']['status-code']);
 
+        // The login response is checked to ensure success (201), 
+        // and the session ID and session cookie are stored for future requests.
         $response = $this->client->call(Client::METHOD_POST, '/account/sessions/email', array_merge([
             'origin' => 'http://localhost',
             'content-type' => 'application/json',
@@ -1386,6 +1391,7 @@ class AccountCustomClientTest extends Scope
 
         $this->assertEquals(200, $response['headers']['status-code']);
 
+        // The response is checked to ensure the user is blocked and the operation was successful (200)
         $response = $this->client->call(Client::METHOD_PATCH, '/users/' . $id . '/status', [
             'content-type' => 'application/json',
             'x-appwrite-project' => $this->getProject()['$id'],
@@ -1396,6 +1402,9 @@ class AccountCustomClientTest extends Scope
 
         $this->assertEquals(200, $response['headers']['status-code']);
 
+        //The test tries to access the user's account again after blocking them.
+        // It expects a 401 Unauthorized response, indicating that 
+        // the user is no longer able to access their account.
         $response = $this->client->call(Client::METHOD_GET, '/account', array_merge([
             'origin' => 'http://localhost',
             'content-type' => 'application/json',
@@ -1405,7 +1414,8 @@ class AccountCustomClientTest extends Scope
 
         $this->assertEquals(401, $response['headers']['status-code']);
 
-
+        // Test to ensure that a new user they are able to log in.
+        // The response is checked for success (201)
         $email1 = uniqid() . 'user@localhost.test';
         $password1 = 'password1';
         $name1 = 'New User Name ';

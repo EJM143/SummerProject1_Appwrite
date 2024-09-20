@@ -991,10 +991,6 @@ App::patch('/v1/users/:userId/status')
             foreach ($sessions as $session) {
                 $dbForProject->deleteDocument('sessions', $session->getId());
             }
-
-            $queueForEvents
-                ->setParam('userId', $user->getId())
-                ->setPayload($response->output($user, Response::MODEL_USER));
         }
 
         $queueForEvents
